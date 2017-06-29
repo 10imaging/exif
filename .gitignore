@@ -3,6 +3,11 @@
 *.lo
 *.o
 *.obj
+exifprint
+exifprint.exe
+
+# Test output (TEMP)
+test.jpg
 
 # Precompiled Headers
 *.gch
