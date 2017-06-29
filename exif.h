@@ -98,8 +98,8 @@ class IFEntry {
     other.length_ = 0;
     other.val_byte_ = nullptr;
   }
-  */
   ~IFEntry() { delete_union(); }
+  */
   unsigned short tag() const { return tag_; }
   void tag(unsigned short tag) { tag_ = tag; }
   unsigned short format() const { return format_; }

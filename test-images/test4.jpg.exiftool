@@ -1,0 +1,68 @@
+ExifTool Version Number         : 10.20
+File Name                       : test4.jpg
+Directory                       : .
+File Size                       : 31 kB
+File Modification Date/Time     : 2017:06:29 11:49:18-07:00
+File Access Date/Time           : 2017:06:29 14:40:45-07:00
+File Inode Change Date/Time     : 2017:06:29 11:49:18-07:00
+File Permissions                : rw-r--r--
+File Type                       : JPEG
+File Type Extension             : jpg
+MIME Type                       : image/jpeg
+JFIF Version                    : 1.01
+Exif Byte Order                 : Big-endian (Motorola, MM)
+Make                            : motorola
+Camera Model Name               : XT1650
+X Resolution                    : 72
+Y Resolution                    : 72
+Resolution Unit                 : inches
+Software                        : griffin-user 6.0.1 MPL24.246-20 21 release-keys
+Modify Date                     : 2017:04:06 16:42:34
+Y Cb Cr Positioning             : Centered
+Exposure Time                   : 1/101
+F Number                        : 1.8
+Exposure Program                : Not Defined
+ISO                             : 1579
+Exif Version                    : 0220
+Date/Time Original              : 2017:04:06 16:42:34
+Create Date                     : 2017:04:06 16:42:34
+Components Configuration        : Y, Cb, Cr, -
+Shutter Speed Value             : 1/101
+Aperture Value                  : 1.8
+Brightness Value                : 0
+Exposure Compensation           : 0
+Max Aperture Value              : 1.8
+Metering Mode                   : Unknown
+Flash                           : Off, Did not fire
+Focal Length                    : 3.7 mm
+User Comment                    :     SCENE_TYPE: OUTDOORS, 100%.    SCENES_DETECTED: Sky, 100%.    TRAINING_MODEL: 32.    WHITE_BALANCE: Auto.    AF_MODE: Off.    FOCUS_DISTANCE: 0.31347963.    FRAME_DURATION: 40023068.
+Sub Sec Time                    : 188439
+Sub Sec Time Original           : 188439
+Sub Sec Time Digitized          : 188439
+Flashpix Version                : 0100
+Color Space                     : sRGB
+Exif Image Width                : 4160
+Exif Image Height               : 3120
+Interoperability Index          : R98 - DCF basic file (sRGB)
+Interoperability Version        : 0100
+Scene Type                      : Unknown (0)
+Custom Rendered                 : Custom
+Exposure Mode                   : Manual
+White Balance                   : Auto
+Scene Capture Type              : Standard
+GPS Map Datum                   : WGS-84
+Image Width                     : 416
+Image Height                    : 312
+Encoding Process                : Baseline DCT, Huffman coding
+Bits Per Sample                 : 8
+Color Components                : 3
+Y Cb Cr Sub Sampling            : YCbCr4:2:0 (2 2)
+Aperture                        : 1.8
+Image Size                      : 416x312
+Megapixels                      : 0.130
+Shutter Speed                   : 1/101
+Create Date                     : 2017:04:06 16:42:34.188439
+Date/Time Original              : 2017:04:06 16:42:34.188439
+Modify Date                     : 2017:04:06 16:42:34.188439
+Focal Length                    : 3.7 mm
+Light Value                     : 4.4
