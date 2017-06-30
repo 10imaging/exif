@@ -98,8 +98,8 @@ class IFEntry {
     other.length_ = 0;
     other.val_byte_ = nullptr;
   }
-  ~IFEntry() { delete_union(); }
   */
+  ~IFEntry() { delete_union(); }
   unsigned short tag() const { return tag_; }
   void tag(unsigned short tag) { tag_ = tag; }
   unsigned short format() const { return format_; }
@@ -162,31 +162,31 @@ class IFEntry {
   void delete_union() {
     switch (format_) {
       case 0x1:
-        delete val_byte_;
+        if (val_byte_) delete val_byte_;
         val_byte_ = nullptr;
         break;
       case 0x2:
-        delete val_string_;
+        if (val_string_) delete val_string_;
         val_string_ = nullptr;
         break;
       case 0x3:
-        delete val_short_;
+        if (val_short_) delete val_short_;
         val_short_ = nullptr;
         break;
       case 0x4:
-        delete val_long_;
+        if (val_long_) delete val_long_;
         val_long_ = nullptr;
         break;
       case 0x5:
-        delete val_rational_;
+        if (val_rational_) delete val_rational_;
         val_rational_ = nullptr;
         break;
       case 0x7:
-        delete val_byte_;
+        if (val_byte_) delete val_byte_;
         val_byte_ = nullptr;
         break;
       case 0xA:
-        delete val_srational_;
+        if (val_srational_) delete val_srational_;
         val_srational_ = nullptr;
         break;
       case 0xff:
@@ -482,8 +482,7 @@ class EXIFInfo {
   // Parsing function for an EXIF segment. This is used internally by
   // parseFrom() but can be called for special cases where only the EXIF section
   // is available (i.e., a blob starting with the bytes "Exif\0\0").
-  int decodeEXIFsegment(const unsigned char *buf, unsigned long len,
-                        std::vector<IFEntry> &IFentries);
+  int decodeEXIFsegment(const unsigned char *buf, unsigned long len);
 
   // Set all data members to default values.
   void clear();
@@ -594,7 +593,7 @@ class EXIFInfo {
     std::string Make;              // Lens manufacturer
     std::string Model;             // Lens model
   } LensInfo;
-
+  std::vector<IFEntry> IFentries;
   EXIFInfo() { clear(); }
 };
 

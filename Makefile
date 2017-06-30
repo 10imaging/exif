@@ -24,6 +24,6 @@ test: exifprint valgrind
 	./test.sh
 
 valgrind: 
-	valgrind --leak-check=full --show-leak-kinds=all ./exifprint test-images/test1.jpg
+	valgrind -v --leak-check=full --track-origins=yes --show-leak-kinds=definite,indirect,possible,reachable ./exifprint test-images/test1.jpg
 	
 contrib: format test valgrind

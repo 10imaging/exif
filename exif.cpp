@@ -73,10 +73,13 @@ int exif::EXIFInfo::read(const unsigned char *buf, unsigned long len) {
     return PARSE_EXIF_ERROR_CORRUPT;
   offs += 2;
   VERBOSE(std::cerr << "section_length= " << section_length
-                    << " section_addr= 0x" << std::hex << offs << std::dec
-                    << "\n");
-  std::vector<IFEntry> IFentries;
-  return decodeEXIFsegment(buf + offs, len - offs, IFentries);
+                    << " section_addr= 0x" << std::hex << offs << std::dec << "\n");
+  
+  int rval = decodeEXIFsegment(buf + offs, len - offs);
+  
+  VERBOSE(std::cerr << "IFentries count=" << IFentries.size() << "\n");
+  
+  return rval;
 }
 
 /*
@@ -152,8 +155,7 @@ int exif::EXIFInfo::write(std::string outputFile) {
 // PARAM: 'len' length of buffer
 //
 int exif::EXIFInfo::decodeEXIFsegment(const unsigned char *buf,
-                                          unsigned long len,
-                                          std::vector<IFEntry> &IFentries) {
+                                          unsigned long len) {
   bool isLittleEndian = true;  // byte alignment (defined in EXIF header)
   unsigned long offs = 0;      // current offset into buffer
   if (!buf || len < 6) return PARSE_EXIF_ERROR_NO_EXIF;
@@ -305,8 +307,7 @@ int exif::EXIFInfo::decodeEXIFsegment(const unsigned char *buf,
     if (offs + 6 + 12 * num_entries > len) return PARSE_EXIF_ERROR_CORRUPT;
     offs += 2;
     while (--num_entries >= 0) {
-      IFEntry result =
-          parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, len);
+      IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, len);
       IFentries.push_back(result);
       switch (result.tag()) {
         case 0x829a:
@@ -753,4 +754,6 @@ void exif::EXIFInfo::clear() {
   LensInfo.FocalPlaneXResolution = 0;
   LensInfo.Make = "";
   LensInfo.Model = "";
+  
+  IFentries.clear();
 }
