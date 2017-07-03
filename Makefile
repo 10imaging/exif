@@ -23,7 +23,7 @@ format:
 test: exifprint valgrind
 	./test.sh
 
-valgrind: 
-	valgrind -v --leak-check=full --track-origins=yes --show-leak-kinds=definite,indirect,possible,reachable ./exifprint test-images/test1.jpg
+valgrind: all
+	valgrind --suppressions=valgrind-suppress --track-origins=yes ./exifprint test-images/test1.jpg
 	
 contrib: format test valgrind

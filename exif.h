@@ -81,8 +81,7 @@ class IFEntry {
   using rational_vector = std::vector<Rational>;
   using srational_vector = std::vector<SRational>;
 
-  IFEntry()
-      : tag_(0xFF), format_(0xFF), data_(0), length_(0), val_byte_(nullptr) {}
+  IFEntry() : tag_(0xFF), format_(0xFF), data_(0), length_(0), val_byte_(nullptr) {}
   /*
   IFEntry(const IFEntry &) = delete;
   IFEntry& operator= (const IFEntry &) = delete;
@@ -99,7 +98,7 @@ class IFEntry {
     other.val_byte_ = nullptr;
   }
   */
-  ~IFEntry() { delete_union(); }
+  //~IFEntry() { delete_union(); }
   unsigned short tag() const { return tag_; }
   void tag(unsigned short tag) { tag_ = tag; }
   unsigned short format() const { return format_; }
@@ -193,6 +192,7 @@ class IFEntry {
         break;
       default:
         // TODO should not get here
+        VERBOSE(std::cerr << "delete_union ERROR");
         break;
     }
   }
@@ -223,7 +223,7 @@ class IFEntry {
         break;
       default:
         // TODO should not get here
-        VERBOSE(std::cerr << "ERROR");
+        VERBOSE(std::cerr << "new_union ERROR");
         break;
     }
   }

@@ -210,8 +210,7 @@ int exif::EXIFInfo::decodeEXIFsegment(const unsigned char *buf,
   unsigned long exif_sub_ifd_offset = len;
   unsigned long gps_sub_ifd_offset = len;
   while (--num_entries >= 0) {
-    IFEntry result =
-        parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, len);
+    IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, len);
     IFentries.push_back(result);
     offs += 12;
     switch (result.tag()) {

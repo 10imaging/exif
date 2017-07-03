@@ -1,0 +1,10 @@
+{
+   suppress-dtoa
+   Memcheck:Cond
+   fun:__dtoa
+   fun:__vfprintf
+   fun:__v2printf
+   fun:vfprintf_l
+   fun:printf
+   fun:main
+}
