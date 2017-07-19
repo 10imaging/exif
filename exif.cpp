@@ -108,8 +108,7 @@ int exif::EXIFInfo::read(std::string inputFile) {
   }
 
   fclose(fp);
-  exif::EXIFInfo result;
-  rval = result.read(buf, fsize);
+  rval = read(buf, fsize);
   delete[] buf;
   return rval;
 }
