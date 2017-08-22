@@ -72,6 +72,7 @@
 #define JPEG_SOI    0xFFD8
 #define EXIF_MARKER 0xFFE1
 #define MAX_TO_PRINT 10
+#define CURR_10_VERSION  0
 
 // Exif defined format types
 #define ENTRY_FORMAT_BYTE       1
@@ -213,6 +214,7 @@
 #define EXIF_10_ROI_RECTS           0xAA0E
 #define EXIF_10_ROI_TYPES           0xAA0F
 #define EXIF_10_ROI_RESULTS         0xAA10
+#define EXIF_10_VERSION             0xAAAA
 
 // Tags used in Interop directory
 #define EXIF_TAG_INTEROP_INDEX      0x0001

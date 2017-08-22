@@ -145,6 +145,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_10_ROI_RECTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Rectangles"," (groups of 4: x y w h"},
         {EXIF_10_ROI_TYPES, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Types"," (Either 1 type for all or type for each ROI Rect}"},
         {EXIF_10_ROI_RESULTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Training Results"," (0-Detected, 1-Correct, 2-Incorrect, 3-Added)"},
+        {EXIF_10_VERSION, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "10 Version",""},
 
         {EXIF_TAG_INTEROP_INDEX, ENTRY_FORMAT_ASCII, EXIF_INTEROP_DIRECTORY, 0, "Interop Index",""},
         {EXIF_TAG_INTEROP_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_INTEROP_DIRECTORY, 0, "Interop Version",""},
@@ -900,10 +901,15 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
     IFDirectory *IFD = getDirectory(EXIF_10_DIRECTORY);
     if (IFD->entries->size() > 0) {
         unsigned long ten_ifd_offset = end_ifd;
+
+        // Add 10 version to the 10 directory
+        IFEntry *ifd_entry = new exif::IFEntry(EXIF_10_VERSION, EXIF_10_DIRECTORY, CURR_10_VERSION);
+        updateEntry(ifd_entry);
+
         end_ifd = write_ifd_entries(IFD->entries, buf, end_ifd, &link_offset);
 
         // Add pointer to 10 IFD in main IFD entry
-        IFEntry *ifd_entry = new exif::IFEntry(EXIF_TAG_10_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)ten_ifd_offset - EXIF_START);
+        ifd_entry = new exif::IFEntry(EXIF_TAG_10_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)ten_ifd_offset - EXIF_START);
         MainIFD->entries->push_back(*ifd_entry);
     }
 
