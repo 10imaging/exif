@@ -15,7 +15,7 @@ if [ ! -e ./exifprint ]; then
 fi
 
 for jpeg in `ls test-images/*.jpg`; do
-  $TOOL_NAME $jpeg > /tmp/`basename $jpeg`.actual
+  $TOOL_NAME $jpeg > /tmp/`basename $jpeg`.actual 2> /tmp/`basename $jpeg`.error
   diff $jpeg.expected /tmp/`basename $jpeg`.actual > /tmp/diff.out
   if [[ -s /tmp/diff.out ]] ; then
     echo "FAILED ON $jpeg"
