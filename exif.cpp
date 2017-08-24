@@ -864,6 +864,9 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
     unsigned long end_ifd = offset;
     unsigned long link_offset;
 
+    // Keep track of any offset entries we add for encoding purposes and then remove them.
+    std::vector<exif::IFEntry> *tmpEntries = new std::vector<exif::IFEntry>;
+
     // Put Interop IFD First
     IFDirectory *InteropIFD = getDirectory(EXIF_INTEROP_DIRECTORY);
     if (InteropIFD ->entries->size() > 0){
@@ -872,7 +875,8 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 
         // Add pointer to Interop IFD in Sub IFD directory
         IFEntry *ifd_entry = new exif::IFEntry(EXIF_TAG_INTEROP_OFFSET, EXIF_SUB_DIRECTORY,  (int)ifd_offset - EXIF_START);
-        SubIFD->entries->push_back(*ifd_entry);
+        updateEntry(ifd_entry);
+        tmpEntries->push_back(*ifd_entry);
     }
 
     // Put SubIFD next
@@ -882,7 +886,8 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 
         // Add pointer to SubIFD in main IFD entry
         IFEntry *sub_ifd_entry = new exif::IFEntry(EXIF_TAG_SUB_IFD_OFFSET, EXIF_MAIN_DIRECTORY, (int)sub_ifd_offset - EXIF_START);
-        MainIFD->entries->push_back(*sub_ifd_entry);
+        updateEntry(sub_ifd_entry);
+        tmpEntries->push_back(*sub_ifd_entry);
     }
 
     // Put GPS IFD next
@@ -894,7 +899,8 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 
         // Add pointer to GPSIFD in main IFD entry
         IFEntry *gps_ifd_entry = new exif::IFEntry(EXIF_TAG_GPS_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)gps_ifd_offset - EXIF_START);
-        MainIFD->entries->push_back(*gps_ifd_entry);
+        updateEntry(gps_ifd_entry);
+        tmpEntries->push_back(*gps_ifd_entry);
     }
 
     // Put 10 IFD next
@@ -910,12 +916,19 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 
         // Add pointer to 10 IFD in main IFD entry
         ifd_entry = new exif::IFEntry(EXIF_TAG_10_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)ten_ifd_offset - EXIF_START);
-        MainIFD->entries->push_back(*ifd_entry);
+        updateEntry(ifd_entry);
+        tmpEntries->push_back(*ifd_entry);
     }
 
     // Place first ifd after the final ifd data
     write_buffer_4(&buf[first_ifd_offset], (u_int32_t) end_ifd - EXIF_START);
     unsigned long end_first_ifd = write_ifd_entries(MainIFD->entries, buf, end_ifd, &link_offset);
+
+    // Now that we are done writing the encoded buffer, remove all of the temporary offset entries
+    for (unsigned long i=0; i<tmpEntries->size(); i++) {
+        removeEntry(tmpEntries->at(i).tag(),tmpEntries->at(i).directory());
+    }
+    tmpEntries->clear();
 
     return (uint16_t) (end_first_ifd + 4);
 }
