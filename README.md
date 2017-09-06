@@ -51,8 +51,8 @@ The following people have committed patches to https://github.com/10imaging/exif
   * Toshiaki Ohkuma
   * pet.b.hunt
   * Jason Moey
-  * Victor Vedovato
-
+  * Victor Vedovato (victorv)
+  * Shari Vedovato (sharived)
 
 ### Example:
 
