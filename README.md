@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F10imaging%2Fexif.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2F10imaging%2Fexif?ref=badge_shield)
+
 exif
 ====
 
@@ -31,6 +33,9 @@ Who uses this library?
 ### License
 
 BSD. Free for personal and commercial use.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F10imaging%2Fexif.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2F10imaging%2Fexif?ref=badge_large)
 
 ### Contributions
 
