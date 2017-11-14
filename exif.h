@@ -885,7 +885,8 @@ namespace exif {
             data = reinterpret_cast<const unsigned char *>(&(reversed_data));
         } else {
             data = buf + base + entry.data();
-            if (data + sizeof(T) * entry.length() > buf + len) {
+            if (data < buf || data + sizeof(T) * entry.length() > buf + len) {
+                LOGD("Data start %ul end %ul doesn't fit in buf start %ul end %ul",data,data + sizeof(T) * entry.length(),buf,buf+len);
                 return false;
             }
         }
@@ -948,7 +949,6 @@ namespace exif {
                 if (!extract_values<uint8_t>(result.val_byte(), buf, base, isLittleEndian,
                                              len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                 break;
             case ENTRY_FORMAT_ASCII:
@@ -956,52 +956,48 @@ namespace exif {
                 if (!extract_values<uint8_t>(result.val_string(), buf, base,
                                              isLittleEndian, len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
-                }
-                // and cut zero byte at the end, since we don't want that in the
-                // std::string
-                if (result.val_string().length() > 0 && result.val_string()[result.val_string().length() - 1] == '\0') {
-                    result.val_string().resize(result.val_string().length() - 1);
+                    result.val_string().resize(0);
+                } else {
+                    // and cut zero byte at the end, since we don't want that in the
+                    // std::string
+                    if (result.val_string().length() > 0 &&
+                        result.val_string()[result.val_string().length() - 1] == '\0') {
+                        result.val_string().resize(result.val_string().length() - 1);
+                    }
                 }
                 break;
             case ENTRY_FORMAT_SHORT:
                 if (!extract_values<uint16_t>(result.val_short(), buf, base,
                                               isLittleEndian, len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                 break;
             case ENTRY_FORMAT_LONG:
                 if (!extract_values<uint32_t>(result.val_long(), buf, base,
                                               isLittleEndian, len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                 break;
             case ENTRY_FORMAT_RATIONAL:
                 if (!extract_values<Rational>(result.val_rational(), buf, base,
                                               isLittleEndian, len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                  break;
             case ENTRY_FORMAT_UNDEFINED:
                 if (!extract_values<uint8_t>(result.val_byte(), buf, base, isLittleEndian,
                                              len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                 break;
             case ENTRY_FORMAT_SRATIONAL:
                 if (!extract_values<SRational>(result.val_srational(), buf, base,
                                                isLittleEndian, len, result)) {
                     ERROR("Error extracting value for %x",result.tag());
-                    result.tag(0xFF);
                 }
                 break;
             default:
                 ERROR("Unsupported format %d",result.format());
-                result.tag(0xFF);
         }
         return result;
     }
