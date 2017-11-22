@@ -145,6 +145,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_10_ROI_RECTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Rectangles"," (groups of 4: x y w h"},
         {EXIF_10_ROI_TYPES, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Types"," (Either 1 type for all or type for each ROI Rect}"},
         {EXIF_10_ROI_RESULTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Training Results"," (0-Detected, 1-Correct, 2-Incorrect, 3-Added)"},
+        {EXIF_10_ROI_ENHANCEMENTS, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Enhancements"," (comma separated list of enhancements for each ROI)"},
         {EXIF_10_VERSION, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "10 Version",""},
 
         {EXIF_TAG_INTEROP_INDEX, ENTRY_FORMAT_ASCII, EXIF_INTEROP_DIRECTORY, 0, "Interop Index",""},

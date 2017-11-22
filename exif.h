@@ -214,6 +214,7 @@
 #define EXIF_10_ROI_RECTS           0xAA0E
 #define EXIF_10_ROI_TYPES           0xAA0F
 #define EXIF_10_ROI_RESULTS         0xAA10
+#define EXIF_10_ROI_ENHANCEMENTS    0xAA11
 #define EXIF_10_VERSION             0xAAAA
 
 // Tags used in Interop directory
