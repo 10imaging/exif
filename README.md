@@ -1,7 +1,7 @@
 exif
 ====
 
-A tiny ISO-compliant C++ EXIF parsing library extended from easyexif (https://github.com/10imaging/easyexif) to additionally save EXIF metadata.
+A tiny ISO-compliant C++ EXIF encoding and decoding library extended from easyexif (https://github.com/10imaging/easyexif) to additionally save EXIF metadata.
 
 EXIF is a tiny, lightweight C++ library that parses basic information out of JPEG files. It uses only the std::string library and is otherwise pure C++. You pass it the binary contents of a JPEG file, and it parses several of the most important EXIF fields for you.
 
@@ -27,6 +27,7 @@ Who uses this library?
   5. Compiles without complaints using `-Wall -Wextra -Werror -pedantic -ansi` on gcc v4.8.2
   6. Loads and saves EXIF meta-data - easyexif only loads EXIF metadata
   7. Handles all IFD types
+  8. Encodes tags for saving your own EXIF tagged files (not supported by the original easyexif)
 
 ### License
 
