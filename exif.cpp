@@ -140,7 +140,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_10_AF_MODE, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "AF Mode",""},
         {EXIF_10_FOCUS_DISTANCE, ENTRY_FORMAT_RATIONAL, EXIF_10_DIRECTORY, 1, "Focus Distance",""},
         {EXIF_10_PANO_NUM_IMAGES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panostitch Number of Input Images",""},
-        {EXIF_10_PANO_NUM_STITCHES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panotstitch Number of Stitches",""},
+        {EXIF_10_PANO_NUM_STITCHES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panostitch Number of Stitches",""},
         {EXIF_10_ROI_CASCADE, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Cascade",""},
         {EXIF_10_ROI_RECTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Rectangles"," (groups of 4: x y w h"},
         {EXIF_10_ROI_TYPES, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Types"," (Either 1 type for all or type for each ROI Rect}"},
