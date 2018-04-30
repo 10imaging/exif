@@ -706,10 +706,11 @@ u_int32_t get_val(exif::IFEntry entry, unsigned char *buf, u_int32_t *dataOffset
             }
             break;
         case ENTRY_FORMAT_ASCII:
-            if (entry.val_string().size() > 4) {
+            if (entry.length() > 4) { // Use original length since we might have removed the \0
                 memcpy(dataBuf, entry.val_string().c_str(), entry.val_string().length());
-                if (entry.length() - entry.val_string().length() == 1)
+                if (entry.length() - entry.val_string().length() == 1) { // account for the \0
                     dataBuf[entry.length() - 1] = 0;
+                }
                 *dataOffset += entry.length();
             } else {
                 return (u_int32_t ) entry.val_string()[0] << 24 |
