@@ -31,6 +31,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <iostream>
 
@@ -73,7 +74,7 @@
 #define JPEG_SOI    0xFFD8
 #define EXIF_MARKER 0xFFE1
 #define MAX_TO_PRINT 10
-#define CURR_10_VERSION  0
+#define CURR_10_VERSION  1
 
 // Exif defined format types
 #define ENTRY_FORMAT_BYTE       1
@@ -95,21 +96,37 @@
 #define EXIF_10_DIRECTORY      10
 
 // Tags used in Main (IFD0) directory
+#define EXIF_TAG_IFD0_IMAGE_WIDTH   0x0100
+#define EXIF_TAG_IFD0_IMAGE_HEIGHT  0x0101
 #define EXIF_TAG_BITS_PER_SAMPLE    0x0102
+#define EXIF_TAG_COMPRESSION_SCHEME 0x0103
+#define EXIF_TAG_PIXEL_COMPOSITION  0x0106
 #define EXIF_TAG_IMAGE_DESCRIPTION  0x010E
 #define EXIF_TAG_DIGICAM_MAKE       0x010F
 #define EXIF_TAG_DIGICAM_MODEL      0x0110
+#define EXIF_TAG_STRIP_OFFSETS      0x0111
 #define EXIF_TAG_ORIENTATION        0x0112
+#define EXIF_TAG_NUM_COMPONENTS     0x0115
+#define EXIF_TAG_ROWS_PER_STRIP     0x0116
+#define EXIF_TAG_STRIP_BYTE_COUNT   0x0117
 #define EXIF_TAG_X_RESOLUTION       0x011A
 #define EXIF_TAG_Y_RESOLUTION       0x011B
+#define EXIF_TAG_Y_PLANAR_CONFIG    0x011C
 #define EXIF_TAG_RESOLUTION_UNIT    0x0128
+#define EXIF_TAG_TRANSFER_FUNCTION  0x012D
 #define EXIF_TAG_SOFTWARE           0x0131
 #define EXIF_TAG_MODIFY_DATE_TIME   0x0132
+#define EXIF_TAG_ARTIST             0x013B
 #define EXIF_TAG_WHITE_POINT        0x013E
 #define EXIF_TAG_PRIMARY_CHROMA     0x013F
+#define EXIF_TAG_JPEG_SOI_OFFSET    0x0201
+#define EXIF_TAG_JPEG_DATA_BYTES    0x0202
 #define EXIF_TAG_YCBCR_COEFF        0x0211
+#define EXIF_TAG_YCBCR_SUBSAMPLING  0x0212
 #define EXIF_TAG_YCBCR_POSITION     0x0213
 #define EXIF_TAG_REF_BW             0x0214
+#define EXIF_TAG_RATING             0x4746
+#define EXIF_TAG_RATING_PERCENT     0x4749
 #define EXIF_TAG_COPYRIGHT          0x8298
 #define EXIF_TAG_SUB_IFD_OFFSET     0x8769
 #define EXIF_TAG_GPS_IFD_OFFSET     0x8825
@@ -159,9 +176,19 @@
 #define EXIF_TAG_DIGITAL_ZOOM_RATIO 0xA404
 #define EXIF_TAG_FOCAL_LENGTH35MM   0xA405
 #define EXIF_TAG_SCENE_CAPTURE_TYPE 0xA406
+#define EXIF_TAG_GAIN_CONTROL       0xA407
+#define EXIF_TAG_CONTRAST           0xA408
+#define EXIF_TAG_SATURATION         0xA409
+#define EXIF_TAG_SHARPNESS          0xA40A
+#define EXIF_TAG_DEVICE_SETTINGS    0xA40B
+#define EXIF_TAG_SUBJ_DIST_RANGE    0xA40C
+#define EXIF_UNIQUE_IMAGE_ID        0xA420
+#define EXIF_CAMERA_OWNER_NAME      0xA430
+#define EXIF_BODY_SERIAL_NUMBER     0xA431
 #define EXIF_TAG_FOCAL_LENGTH_FSTOP 0xA432
 #define EXIF_TAG_LENS_MAKE          0xA433
 #define EXIF_TAG_LENS_MODEL         0xA434
+#define EXIF_TAG_LENS_SERIAL_NUMBER 0xA435
 
 // Tags used in GPS directory
 #define EXIF_TAG_GPS_VERSION_ID     0x0000
