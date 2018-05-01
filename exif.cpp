@@ -37,7 +37,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_TAG_DIGICAM_MAKE, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera make",""},
         {EXIF_TAG_DIGICAM_MODEL, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera model",""},
         {EXIF_TAG_STRIP_OFFSETS, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Image Data Location",""},
-        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Image Orientation"," (1-Horizonta)l"},
+        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Image Orientation"," (1-Horizontal)"},
         {EXIF_TAG_NUM_COMPONENTS, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Number of Components",""},
         {EXIF_TAG_ROWS_PER_STRIP, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Number of Rows Per Strip",""},
         {EXIF_TAG_STRIP_BYTE_COUNT, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Bytes Per Compressed Strip",""},
