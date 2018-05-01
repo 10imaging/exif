@@ -915,7 +915,7 @@ namespace exif {
         } else {
             data = buf + base + entry.data();
             if (data < buf || data + sizeof(T) * entry.length() > buf + len) {
-                LOGD("Data start %ul end %ul doesn't fit in buf start %ul end %ul",data,data + sizeof(T) * entry.length(),buf,buf+len);
+                LOGD("Data start %lu end %lu doesn't fit in buf start %lu end %lu",(unsigned long)data,(unsigned long)(data + sizeof(T) * entry.length()),(unsigned long)buf,(unsigned long)(buf+len));
                 return false;
             }
         }

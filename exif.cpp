@@ -37,7 +37,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_TAG_DIGICAM_MAKE, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera make",""},
         {EXIF_TAG_DIGICAM_MODEL, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera model",""},
         {EXIF_TAG_STRIP_OFFSETS, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Image Data Location",""},
-        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Image Orientation",""},
+        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Image Orientation"," (1-Horizonta)l"},
         {EXIF_TAG_NUM_COMPONENTS, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Number of Components",""},
         {EXIF_TAG_ROWS_PER_STRIP, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Number of Rows Per Strip",""},
         {EXIF_TAG_STRIP_BYTE_COUNT, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Bytes Per Compressed Strip",""},
@@ -961,6 +961,21 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
     return (uint16_t) (end_first_ifd + 4);
 }
 
+/**
+ * Compute an approximate size for the header buffer
+ * @param exifInfo EXIFInfo to compute size for
+ * @return approximate size of buffer
+ */
+unsigned long getApproxSize(exif::EXIFInfo *exifInfo) {
+    unsigned long size = 0xFF; // Add Some padding
+    for (unsigned long i = 0; i < exifInfo->IFDirectories.size(); i++) {
+        size += exifInfo->IFDirectories.at(i)->entries->size()*ENTRY_SIZE + 4;
+    }
+    for (unsigned long i = 0; i < exifInfo->AppMarkers.size(); i++) {
+        size += exifInfo->AppMarkers.at(i)->length+4;
+    }
+    return size;
+}
 
 /**
  * Write the JPEG EXIF data in a buffer starting with the JPEG_SOI
@@ -970,8 +985,9 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 void exif::EXIFInfo::encodeJPEGHeader(unsigned char **buf,
                                       unsigned long *len) {
 
-    int curr_size = 0xFFFF; // Maximum header size
-    unsigned char *tmp = (unsigned char *) malloc((size_t) curr_size);
+    unsigned long init_size = getApproxSize(this);
+    LOGD("Initial size is %lu",init_size);
+    unsigned char *tmp = (unsigned char *) malloc((size_t) init_size);
 
     //   2 bytes: 0xFFD8 (big-endian)
     // EXIF header
@@ -993,10 +1009,10 @@ void exif::EXIFInfo::encodeJPEGHeader(unsigned char **buf,
     offset += exif_size-2; // Includes 2 bytes for size
     //Encode other segments
     for (unsigned long i=0; i<AppMarkers.size(); i++) {
-        LOGD("Start marker at 0x%x",(int)offset);
+        LOGD("Start marker 0x%x at 0x%x",AppMarkers.at(i)->type,(int)offset);
         offset += write_app_marker(&tmp[offset],AppMarkers.at(i));
     }
-    LOGD("Total header len %x",(int)offset);
+    LOGD("Total header len %lu",offset);
     *len = offset;
     *buf = (unsigned char *)realloc(tmp, *len);
 }
