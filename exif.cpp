@@ -970,7 +970,7 @@ unsigned long getApproxSize(exif::EXIFInfo *exifInfo) {
     unsigned long size = 0xFF; // Add Some padding
     for (unsigned long i = 0; i < exifInfo->IFDirectories.size(); i++) {
         size += exifInfo->IFDirectories.at(i)->entries->size()*ENTRY_SIZE + 4;
-        for (int j=0; j<exifInfo->IFDirectories.at(i)->entries->size(); j++) {
+        for (unsigned long j=0; j<exifInfo->IFDirectories.at(i)->entries->size(); j++) {
             size += exifInfo->IFDirectories.at(i)->entries->at(j).length();
         }
     }
