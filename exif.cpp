@@ -27,132 +27,157 @@
 
 using std::string;
 
+/*  Overview of EXIF format:
+ *  See http://www.cipa.jp/std/documents/e/DC-008-Translation-2016-E.pdf for full details
+ *  SOI (Start of Image)
+ *  APP1:
+ *    APP1 Marker
+ *    APP1 length
+ *    EXIF Identifier code
+ *    TIFF header
+ *    0th IFD for Primary Image (Includes: ImageWidth, StripOffsets, EXIF IFD Pointer, GPS IFD Pointer, Next IFD Pointer)
+ *    Data for the 0th IFD
+ *    EXIF IFD (Pointed to by EXIF IFD Pointer)(Includes: EXIFVersion, Aperture, etc)
+ *    Data for EXIF IFD0
+ *    GPS IFD (Pointed to by GPS IFD Pointer)(Includes: GPSVersion, etc)
+ *    Data for GPS IFD
+ *    1st IFD for Thumbnail data (Pointed to by Next IFD Pointer)(Incudes: ImageWidth, StripOffsets)
+ *    Data for 1st IFD0
+ *    Thumbnail dataAddr (Pointed to by IFD1 StripOffsets)
+ *    Primary image data (Pointed to by IFD0 StripOffsets)
+ *  (APP2...)
+ *  DQT (Quantization table)
+ *  DHT (Huffman table)
+ *  SOF (Frame header)
+ *  SOS (Scan Header)
+ *  Compressed data (Includes: SOI, DQT, DHT, SOF, SOS, data, EOI)
+ *  EOI (End of Image)
+ */
 exif::TagInfo tagInfoData[] = {
-        {EXIF_TAG_IFD0_IMAGE_WIDTH,   ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Image Width",""},
-        {EXIF_TAG_IFD0_IMAGE_HEIGHT,   ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Image Height",""},
-        {EXIF_TAG_BITS_PER_SAMPLE,   ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 3, "Bits Per Sample",""},
-        {EXIF_TAG_COMPRESSION_SCHEME,   ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Compression Scheme",""},
-        {EXIF_TAG_PIXEL_COMPOSITION,   ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Pixel Composition",""},
-        {EXIF_TAG_IMAGE_DESCRIPTION, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Image Description",""},
-        {EXIF_TAG_DIGICAM_MAKE, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera make",""},
-        {EXIF_TAG_DIGICAM_MODEL, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Camera model",""},
-        {EXIF_TAG_STRIP_OFFSETS, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Image Data Location",""},
-        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Image Orientation"," (1-Horizontal)"},
-        {EXIF_TAG_NUM_COMPONENTS, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Number of Components",""},
-        {EXIF_TAG_ROWS_PER_STRIP, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Number of Rows Per Strip",""},
-        {EXIF_TAG_STRIP_BYTE_COUNT, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 0, "Bytes Per Compressed Strip",""},
-        {EXIF_TAG_X_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 1, "X Resolution",""},
-        {EXIF_TAG_Y_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 1, "Y Resolution",""},
-        {EXIF_TAG_Y_PLANAR_CONFIG, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 1, "Image Data Arrangement",""},
-        {EXIF_TAG_RESOLUTION_UNIT, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "Resolution Unit"," (1-noUnit, 2-inches, 3-cm)"},
-        {EXIF_TAG_TRANSFER_FUNCTION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, (3*256), "Transfer Function",""},
-        {EXIF_TAG_SOFTWARE, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Software",""},
-        {EXIF_TAG_MODIFY_DATE_TIME, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Image date/time",""},
-        {EXIF_TAG_ARTIST, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Artist",""},
-        {EXIF_TAG_WHITE_POINT, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 2, "White Point",""},
-        {EXIF_TAG_PRIMARY_CHROMA, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 6, "Primary Chromaticities",""},
-        {EXIF_TAG_JPEG_SOI_OFFSET, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Offset to JPEG SOI",""},
-        {EXIF_TAG_JPEG_DATA_BYTES, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "Bytes of JPEG data",""},
-        {EXIF_TAG_YCBCR_COEFF, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 3, "YCbCr Coefficients",""},
-        {EXIF_TAG_YCBCR_SUBSAMPLING, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 2, "Subsampling Ratio of Y to C",""},
-        {EXIF_TAG_YCBCR_POSITION, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 1, "YCbCr Positioning"," (1-Centered, 2-Co-sited)"},
-        {EXIF_TAG_REF_BW, ENTRY_FORMAT_RATIONAL, EXIF_MAIN_DIRECTORY, 6, "Reference Black White",""},
-        {EXIF_TAG_RATING, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 0, "Rating",""},
-        {EXIF_TAG_RATING_PERCENT, ENTRY_FORMAT_SHORT, EXIF_MAIN_DIRECTORY, 0, "Rating Percent",""},
-        {EXIF_TAG_COPYRIGHT, ENTRY_FORMAT_ASCII, EXIF_MAIN_DIRECTORY, 0, "Copyright",""},
-        {EXIF_TAG_SUB_IFD_OFFSET, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "SUB IFD Offset",""},
-        {EXIF_TAG_GPS_IFD_OFFSET, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "GPS IFD Offset",""},
-        {EXIF_TAG_10_IFD_OFFSET, ENTRY_FORMAT_LONG, EXIF_MAIN_DIRECTORY, 1, "10 IFD Offset",""},
+        {EXIF_TAG_IFD_IMAGE_WIDTH,   ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "Image Width",""},
+        {EXIF_TAG_IFD_IMAGE_HEIGHT,   ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "Image Height",""},
+        {EXIF_TAG_BITS_PER_SAMPLE,   ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 3, "Bits Per Sample",""},
+        {EXIF_TAG_COMPRESSION_SCHEME,   ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "Compression Scheme",""},
+        {EXIF_TAG_PIXEL_COMPOSITION,   ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "Pixel Composition",""},        {EXIF_TAG_IMAGE_DESCRIPTION, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Image Description",""},
+        {EXIF_TAG_DIGICAM_MAKE, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Camera make",""},
+        {EXIF_TAG_DIGICAM_MODEL, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Camera model",""},
+        {EXIF_TAG_STRIP_OFFSETS, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 0, "Image Data Location",""},
+        {EXIF_TAG_ORIENTATION, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "Image Orientation"," (1-Horizontal)"},
+        {EXIF_TAG_NUM_COMPONENTS, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "Number of Components",""},
+        {EXIF_TAG_ROWS_PER_STRIP, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "Number of Rows Per Strip",""},
+        {EXIF_TAG_STRIP_BYTE_COUNT, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 0, "Bytes Per Compressed Strip",""},
+        {EXIF_TAG_X_RESOLUTION, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 1, "X Resolution",""},
+        {EXIF_TAG_Y_RESOLUTION, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 1, "Y Resolution",""},
+        {EXIF_TAG_Y_PLANAR_CONFIG, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 1, "Image Data Arrangement",""},
+        {EXIF_TAG_RESOLUTION_UNIT, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "Resolution Unit"," (1-noUnit, 2-inches, 3-cm)"},
+        {EXIF_TAG_TRANSFER_FUNCTION, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, (3*256), "Transfer Function",""},
+        {EXIF_TAG_SOFTWARE, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Software",""},
+        {EXIF_TAG_MODIFY_DATE_TIME, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Image date/time",""},
+        {EXIF_TAG_ARTIST, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Artist",""},
+        {EXIF_TAG_WHITE_POINT, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 2, "White Point",""},
+        {EXIF_TAG_PRIMARY_CHROMA, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 6, "Primary Chromaticities",""},
+        {EXIF_TAG_JPEG_SOI_OFFSET, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "Offset to JPEG SOI",""},
+        {EXIF_TAG_JPEG_DATA_BYTES, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "Bytes of JPEG data",""},
+        {EXIF_TAG_YCBCR_COEFF, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 3, "YCbCr Coefficients",""},
+        {EXIF_TAG_YCBCR_SUBSAMPLING, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 2, "Subsampling Ratio of Y to C",""},
+        {EXIF_TAG_YCBCR_POSITION, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 1, "YCbCr Positioning"," (1-Centered, 2-Co-sited)"},
+        {EXIF_TAG_REF_BW, ENTRY_FORMAT_RATIONAL, IFD0_DIRECTORY, 6, "Reference Black White",""},
+        {EXIF_TAG_RATING, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 0, "Rating",""},
+        {EXIF_TAG_RATING_PERCENT, ENTRY_FORMAT_SHORT, IFD0_DIRECTORY, 0, "Rating Percent",""},
+        {EXIF_TAG_COPYRIGHT, ENTRY_FORMAT_ASCII, IFD0_DIRECTORY, 0, "Copyright",""},
+        {EXIF_TAG_EXIF_IFD_OFFSET, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "EXIF IFD Offset",""},
+        {EXIF_TAG_GPS_IFD_OFFSET, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "GPS IFD Offset",""},
+        {EXIF_TAG_10_IFD_OFFSET, ENTRY_FORMAT_LONG, IFD0_DIRECTORY, 1, "10 IFD Offset",""},
 
-        {EXIF_TAG_EXPOSURE_TIME, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Exposure Time"," s"},
-        {EXIF_TAG_FNUMBER, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "F-stop",""},
-        {EXIF_TAG_EXPOSURE_PROGRAM, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Exposure Program",""},
-        {EXIF_TAG_ISO_SPEED_RATING, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "ISO Speed",""},
-        {EXIF_TAG_EXIF_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 4, "Exif Version",""},
-        {EXIF_TAG_ORIGINAL_DATE, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Original date/time",""},
-        {EXIF_TAG_DIGITIZATION_DATE, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Digitize date/time",""},
-        {EXIF_TAG_COMPONENTS_CONFIG, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 4, "Components Configuration",""},
-        {EXIF_TAG_COMPRESSED_BPP, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Compressed BitsPerPixel",""},
-        {EXIF_TAG_SHUTTER_SPEED, ENTRY_FORMAT_SRATIONAL, EXIF_SUB_DIRECTORY, 1, "Shutter Speed Value"," s"},
-        {EXIF_TAG_APERTURE_VALUE, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Aperture Value",""},
-        {EXIF_TAG_BRIGHTNESS_VALUE, ENTRY_FORMAT_SRATIONAL, EXIF_SUB_DIRECTORY, 1, "Brightness Value",""},
-        {EXIF_TAG_EXPOSURE_BIAS, ENTRY_FORMAT_SRATIONAL, EXIF_SUB_DIRECTORY, 1, "Exposure Bias"," EV"},
-        {EXIF_TAG_MAX_APERTURE, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Max Aperture Value"," m"},
-        {EXIF_TAG_SUBJECT_DIST, ENTRY_FORMAT_SRATIONAL, EXIF_SUB_DIRECTORY, 1, "Subject Distance"," m"},
-        {EXIF_TAG_METERING_MODE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Metering Mode",""},
-        {EXIF_TAG_LIGHT_SOURCE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Light Source"," (1-average, 2-center weighted, 3-spot, 4-multiSpot, 5-multiSegment"},
-        {EXIF_TAG_FLASH_USED, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Flash Used",""},
-        {EXIF_TAG_FOCAL_LENGTH, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Focal Length"," mm"},
-        {EXIF_TAG_SUBJECT_LOCATION, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 4, "Subject Location",""},
-        {EXIF_TAG_MAKER_NOTE, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 1, "Maker Note",""},
-        {EXIF_TAG_USER_COMMENT, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "User Comment",""},
-        {EXIF_TAG_SUB_SEC_TIME, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Subsec time",""},
-        {EXIF_TAG_SUB_SEC_ORIG_TIME, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Subsec orig time",""},
-        {EXIF_TAG_DIGITIZED_TIME, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Digitize date/time",""},
-        {EXIF_TAG_FLASH_PIX_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 4, "Flashpix Version",""},
-        {EXIF_TAG_COLOR_SPACE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "ColorSpace",""},
-        {EXIF_TAG_IMAGE_WIDTH, ENTRY_FORMAT_LONG, EXIF_SUB_DIRECTORY, 1, "Image Width",""},
-        {EXIF_TAG_IMAGE_HEIGHT, ENTRY_FORMAT_LONG, EXIF_SUB_DIRECTORY, 1, "Image Height",""},
-        {EXIF_TAG_SOUND_FILE, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Related Sound File",""},
-        {EXIF_TAG_INTEROP_OFFSET, ENTRY_FORMAT_LONG, EXIF_SUB_DIRECTORY, 1, "Interop Offset",""},
-        {EXIF_TAG_FOCAL_X_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Focal plane XRes",""},
-        {EXIF_TAG_FOCAL_Y_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Focal plane YRes",""},
-        {EXIF_TAG_FOCAL_RES_UNIT, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Focal plane Resolution Unit"," (1-noUnit, 2-inch, 3-cm"},
-        {EXIF_TAG_SENSING_METHOD, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Sensing Method",""},
-        {EXIF_TAG_FILE_SOURCE, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 1, "File Source",""},
-        {EXIF_TAG_SCENE_TYPE, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 1, "Scene Type",""},
-        {EXIF_TAG_CUSTOM_RENDERED, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Custom Rendered"," (0-Normal, 1-Custom)"},
-        {EXIF_TAG_EXPOSURE_MODE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Exposure Mode"," (0-Auto, 1-Manual, 2-Auto-Bracket)"},
-        {EXIF_TAG_WHITE_BALANCE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "White Balance"," (0-Auto, 1-Manual)"},
-        {EXIF_TAG_DIGITAL_ZOOM_RATIO, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Digital Zoom Ratio",""},
-        {EXIF_TAG_FOCAL_LENGTH35MM, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "35mm Focal Length","mm"},
-        {EXIF_TAG_SCENE_CAPTURE_TYPE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Scene Capture Type",""},
-        {EXIF_TAG_GAIN_CONTROL, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Gain Control",""},
-        {EXIF_TAG_CONTRAST, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Contrast",""},
-        {EXIF_TAG_SATURATION, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Saturation",""},
-        {EXIF_TAG_SHARPNESS, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Sharpness",""},
-        {EXIF_TAG_DEVICE_SETTINGS, ENTRY_FORMAT_UNDEFINED, EXIF_SUB_DIRECTORY, 0, "Device Settings Description",""},
-        {EXIF_TAG_SUBJ_DIST_RANGE, ENTRY_FORMAT_SHORT, EXIF_SUB_DIRECTORY, 1, "Subject Distance Range",""},
-        {EXIF_UNIQUE_IMAGE_ID, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 33, "Unique Image ID",""},
-        {EXIF_CAMERA_OWNER_NAME, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Camera Owner Name",""},
-        {EXIF_BODY_SERIAL_NUMBER, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Body Serial Number",""},
-        {EXIF_TAG_FOCAL_LENGTH_FSTOP, ENTRY_FORMAT_RATIONAL, EXIF_SUB_DIRECTORY, 1, "Focal Length/FStop Min/Max",""},
-        {EXIF_TAG_LENS_MAKE, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Lens Make",""},
-        {EXIF_TAG_LENS_MODEL, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Lens Model",""},
-        {EXIF_TAG_LENS_SERIAL_NUMBER, ENTRY_FORMAT_ASCII, EXIF_SUB_DIRECTORY, 0, "Lens Serial Number",""},
+        {EXIF_TAG_EXPOSURE_TIME, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Exposure Time"," s"},
+        {EXIF_TAG_FNUMBER, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "F-stop",""},
+        {EXIF_TAG_EXPOSURE_PROGRAM, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Exposure Program",""},
+        {EXIF_TAG_ISO_SPEED_RATING, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "ISO Speed",""},
+        {EXIF_TAG_EXIF_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 4, "Exif Version",""},
+        {EXIF_TAG_ORIGINAL_DATE, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Original date/time",""},
+        {EXIF_TAG_DIGITIZATION_DATE, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Digitize date/time",""},
+        {EXIF_TAG_COMPONENTS_CONFIG, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 4, "Components Configuration",""},
+        {EXIF_TAG_COMPRESSED_BPP, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Compressed BitsPerPixel",""},
+        {EXIF_TAG_SHUTTER_SPEED, ENTRY_FORMAT_SRATIONAL, EXIF_IFD_DIRECTORY, 1, "Shutter Speed Value"," s"},
+        {EXIF_TAG_APERTURE_VALUE, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Aperture Value",""},
+        {EXIF_TAG_BRIGHTNESS_VALUE, ENTRY_FORMAT_SRATIONAL, EXIF_IFD_DIRECTORY, 1, "Brightness Value",""},
+        {EXIF_TAG_EXPOSURE_BIAS, ENTRY_FORMAT_SRATIONAL, EXIF_IFD_DIRECTORY, 1, "Exposure Bias"," EV"},
+        {EXIF_TAG_MAX_APERTURE, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Max Aperture Value"," m"},
+        {EXIF_TAG_SUBJECT_DIST, ENTRY_FORMAT_SRATIONAL, EXIF_IFD_DIRECTORY, 1, "Subject Distance"," m"},
+        {EXIF_TAG_METERING_MODE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Metering Mode",""},
+        {EXIF_TAG_LIGHT_SOURCE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Light Source"," (1-average, 2-center weighted, 3-spot, 4-multiSpot, 5-multiSegment"},
+        {EXIF_TAG_FLASH_USED, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Flash Used",""},
+        {EXIF_TAG_FOCAL_LENGTH, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Focal Length"," mm"},
+        {EXIF_TAG_SUBJECT_LOCATION, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 4, "Subject Location",""},
+        {EXIF_TAG_MAKER_NOTE, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 1, "Maker Note",""},
+        {EXIF_TAG_USER_COMMENT, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "User Comment",""},
+        {EXIF_TAG_SUB_SEC_TIME, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Subsec time",""},
+        {EXIF_TAG_SUB_SEC_ORIG_TIME, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Subsec orig time",""},
+        {EXIF_TAG_DIGITIZED_TIME, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Digitize date/time",""},
+        {EXIF_TAG_FLASH_PIX_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 4, "Flashpix Version",""},
+        {EXIF_TAG_COLOR_SPACE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "ColorSpace",""},
+        {EXIF_TAG_IMAGE_WIDTH, ENTRY_FORMAT_LONG, EXIF_IFD_DIRECTORY, 1, "EXIF Image Width",""},
+        {EXIF_TAG_IMAGE_HEIGHT, ENTRY_FORMAT_LONG, EXIF_IFD_DIRECTORY, 1, "EXIF Image Height",""},
+        {EXIF_TAG_SOUND_FILE, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Related Sound File",""},
+        {EXIF_TAG_INTEROP_OFFSET, ENTRY_FORMAT_LONG, EXIF_IFD_DIRECTORY, 1, "Interop Offset",""},
+        {EXIF_TAG_FOCAL_X_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Focal plane XRes",""},
+        {EXIF_TAG_FOCAL_Y_RESOLUTION, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Focal plane YRes",""},
+        {EXIF_TAG_FOCAL_RES_UNIT, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Focal plane Resolution Unit"," (1-noUnit, 2-inch, 3-cm"},
+        {EXIF_TAG_SENSING_METHOD, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Sensing Method",""},
+        {EXIF_TAG_FILE_SOURCE, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 1, "File Source",""},
+        {EXIF_TAG_SCENE_TYPE, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 1, "Scene Type",""},
+        {EXIF_TAG_CUSTOM_RENDERED, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Custom Rendered"," (0-Normal, 1-Custom)"},
+        {EXIF_TAG_EXPOSURE_MODE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Exposure Mode"," (0-Auto, 1-Manual, 2-Auto-Bracket)"},
+        {EXIF_TAG_WHITE_BALANCE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "White Balance"," (0-Auto, 1-Manual)"},
+        {EXIF_TAG_DIGITAL_ZOOM_RATIO, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Digital Zoom Ratio",""},
+        {EXIF_TAG_FOCAL_LENGTH35MM, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "35mm Focal Length","mm"},
+        {EXIF_TAG_SCENE_CAPTURE_TYPE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Scene Capture Type",""},
+        {EXIF_TAG_GAIN_CONTROL, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Gain Control",""},
+        {EXIF_TAG_CONTRAST, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Contrast",""},
+        {EXIF_TAG_SATURATION, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Saturation",""},
+        {EXIF_TAG_SHARPNESS, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Sharpness",""},
+        {EXIF_TAG_DEVICE_SETTINGS, ENTRY_FORMAT_UNDEFINED, EXIF_IFD_DIRECTORY, 0, "Device Settings Description",""},
+        {EXIF_TAG_SUBJ_DIST_RANGE, ENTRY_FORMAT_SHORT, EXIF_IFD_DIRECTORY, 1, "Subject Distance Range",""},
+        {EXIF_UNIQUE_IMAGE_ID, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 33, "Unique Image ID",""},
+        {EXIF_CAMERA_OWNER_NAME, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Camera Owner Name",""},
+        {EXIF_BODY_SERIAL_NUMBER, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Body Serial Number",""},
+        {EXIF_TAG_FOCAL_LENGTH_FSTOP, ENTRY_FORMAT_RATIONAL, EXIF_IFD_DIRECTORY, 1, "Focal Length/FStop Min/Max",""},
+        {EXIF_TAG_LENS_MAKE, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Lens Make",""},
+        {EXIF_TAG_LENS_MODEL, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Lens Model",""},
+        {EXIF_TAG_LENS_SERIAL_NUMBER, ENTRY_FORMAT_ASCII, EXIF_IFD_DIRECTORY, 0, "Lens Serial Number",""},
 
-        {EXIF_TAG_GPS_VERSION_ID, ENTRY_FORMAT_BYTE, EXIF_GPS_DIRECTORY, 4, "GPS Version ID",""},
-        {EXIF_TAG_GPS_LATITUDE_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 2, "GPS Latitude Ref",""},
-        {EXIF_TAG_GPS_LATITUDE, ENTRY_FORMAT_RATIONAL, EXIF_GPS_DIRECTORY, 0, "GSP Latitude",""},
-        {EXIF_TAG_GPS_LONGITUDE_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Longitude Ref",""},
-        {EXIF_TAG_GPS_LONGITUDE, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Longitude",""},
-        {EXIF_TAG_GPS_ALTITUDE_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Altitude Ref",""},
-        {EXIF_TAG_GPS_ALTITUDE, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Altitude",""},
-        {EXIF_TAG_GPS_TIME_STAMP, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Time Stamp",""},
-        {EXIF_TAG_GPS_SATELLITES, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Satellites",""},
-        {EXIF_TAG_GPS_STATUS, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Status",""},
-        {EXIF_TAG_GPS_MEASURE_MODE, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Measure Mode",""},
-        {EXIF_TAG_GPS_DOP, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS DOP",""},
-        {EXIF_TAG_GPS_SPEED_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Speed Ref",""},
-        {EXIF_TAG_GPS_SPEED, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Speed",""},
-        {EXIF_TAG_GPS_TRACK_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Track Ref",""},
-        {EXIF_TAG_GPS_TRACK, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Track",""},
-        {EXIF_TAG_GPS_IMG_DIR_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Image Direction Ref",""},
-        {EXIF_TAG_GPS_IMG_DIR, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Image Direction",""},
-        {EXIF_TAG_GPS_MAP_DATUM, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Map Datum",""},
-        {EXIF_TAG_GPS_DEST_LAT_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Latitude Ref",""},
-        {EXIF_TAG_GPS_DEST_LATITUDE, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Latitude",""},
-        {EXIF_TAG_GPS_DEST_LONG_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Longitude Ref",""},
-        {EXIF_TAG_GPS_DEST_LONGITUDE, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Longitude",""},
-        {EXIF_TAG_GPS_DEST_BEARING_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Bearing Ref",""},
-        {EXIF_TAG_GPS_DEST_BEARING, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Bearing",""},
-        {EXIF_TAG_GPS_DEST_DIST_REF, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Distance Ref",""},
-        {EXIF_TAG_GPS_DEST_DIST, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Destination Distance",""},
-        {EXIF_TAG_GPS_PROCESSING_METHOD, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Processing Method",""},
-        {EXIF_TAG_GPS_AREA_INFO, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Area Info",""},
-        {EXIF_TAG_GPS_DATE_STAMP, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Date Stamp",""},
-        {EXIF_TAG_GPS_DIFFERENTIAL, ENTRY_FORMAT_ASCII, EXIF_GPS_DIRECTORY, 0, "GPS Differential",""},
-        {EXIF_TAG_GPS_HORIZ_POS_ERR, ENTRY_FORMAT_RATIONAL, EXIF_GPS_DIRECTORY, 1, "GPS Horizontal Positioning Error",""},
+        {EXIF_TAG_GPS_VERSION_ID, ENTRY_FORMAT_BYTE, GPS_IFD_DIRECTORY, 4, "GPS Version ID",""},
+        {EXIF_TAG_GPS_LATITUDE_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 2, "GPS Latitude Ref",""},
+        {EXIF_TAG_GPS_LATITUDE, ENTRY_FORMAT_RATIONAL, GPS_IFD_DIRECTORY, 0, "GSP Latitude",""},
+        {EXIF_TAG_GPS_LONGITUDE_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Longitude Ref",""},
+        {EXIF_TAG_GPS_LONGITUDE, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Longitude",""},
+        {EXIF_TAG_GPS_ALTITUDE_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Altitude Ref",""},
+        {EXIF_TAG_GPS_ALTITUDE, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Altitude",""},
+        {EXIF_TAG_GPS_TIME_STAMP, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Time Stamp",""},
+        {EXIF_TAG_GPS_SATELLITES, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Satellites",""},
+        {EXIF_TAG_GPS_STATUS, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Status",""},
+        {EXIF_TAG_GPS_MEASURE_MODE, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Measure Mode",""},
+        {EXIF_TAG_GPS_DOP, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS DOP",""},
+        {EXIF_TAG_GPS_SPEED_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Speed Ref",""},
+        {EXIF_TAG_GPS_SPEED, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Speed",""},
+        {EXIF_TAG_GPS_TRACK_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Track Ref",""},
+        {EXIF_TAG_GPS_TRACK, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Track",""},
+        {EXIF_TAG_GPS_IMG_DIR_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Image Direction Ref",""},
+        {EXIF_TAG_GPS_IMG_DIR, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Image Direction",""},
+        {EXIF_TAG_GPS_MAP_DATUM, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Map Datum",""},
+        {EXIF_TAG_GPS_DEST_LAT_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Latitude Ref",""},
+        {EXIF_TAG_GPS_DEST_LATITUDE, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Latitude",""},
+        {EXIF_TAG_GPS_DEST_LONG_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Longitude Ref",""},
+        {EXIF_TAG_GPS_DEST_LONGITUDE, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Longitude",""},
+        {EXIF_TAG_GPS_DEST_BEARING_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Bearing Ref",""},
+        {EXIF_TAG_GPS_DEST_BEARING, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Bearing",""},
+        {EXIF_TAG_GPS_DEST_DIST_REF, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Distance Ref",""},
+        {EXIF_TAG_GPS_DEST_DIST, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Destination Distance",""},
+        {EXIF_TAG_GPS_PROCESSING_METHOD, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Processing Method",""},
+        {EXIF_TAG_GPS_AREA_INFO, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Area Info",""},
+        {EXIF_TAG_GPS_DATE_STAMP, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Date Stamp",""},
+        {EXIF_TAG_GPS_DIFFERENTIAL, ENTRY_FORMAT_ASCII, GPS_IFD_DIRECTORY, 0, "GPS Differential",""},
+        {EXIF_TAG_GPS_HORIZ_POS_ERR, ENTRY_FORMAT_RATIONAL, GPS_IFD_DIRECTORY, 1, "GPS Horizontal Positioning Error",""},
 
         {EXIF_10_SCENE_TYPE, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "Scene Type",""},
         {EXIF_10_SCENE_PROBABILITY, ENTRY_FORMAT_RATIONAL, EXIF_10_DIRECTORY, 1, "Scene Probability",""},
@@ -166,7 +191,7 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_10_AF_MODE, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "AF Mode",""},
         {EXIF_10_FOCUS_DISTANCE, ENTRY_FORMAT_RATIONAL, EXIF_10_DIRECTORY, 1, "Focus Distance",""},
         {EXIF_10_PANO_NUM_IMAGES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panostitch Number of Input Images",""},
-        {EXIF_10_PANO_NUM_STITCHES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panotstitch Number of Stitches",""},
+        {EXIF_10_PANO_NUM_STITCHES, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "Panostitch Number of Stitches",""},
         {EXIF_10_ROI_CASCADE, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Cascade",""},
         {EXIF_10_ROI_RECTS, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 0, "ROI Rectangles"," (groups of 4: x y w h"},
         {EXIF_10_ROI_TYPES, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Types"," (Either 1 type for all or type for each ROI Rect}"},
@@ -174,10 +199,26 @@ exif::TagInfo tagInfoData[] = {
         {EXIF_10_ROI_ENHANCEMENTS, ENTRY_FORMAT_ASCII, EXIF_10_DIRECTORY, 0, "ROI Enhancements"," (comma separated list of enhancements for each ROI)"},
         {EXIF_10_VERSION, ENTRY_FORMAT_SHORT, EXIF_10_DIRECTORY, 1, "10 Version",""},
 
-        {EXIF_TAG_INTEROP_INDEX, ENTRY_FORMAT_ASCII, EXIF_INTEROP_DIRECTORY, 0, "Interop Index",""},
-        {EXIF_TAG_INTEROP_VERSION, ENTRY_FORMAT_UNDEFINED, EXIF_INTEROP_DIRECTORY, 0, "Interop Version",""},
+        {EXIF_TAG_INTEROP_INDEX, ENTRY_FORMAT_ASCII, INTEROP_IFD_DIRECTORY, 0, "Interop Index",""},
+        {EXIF_TAG_INTEROP_VERSION, ENTRY_FORMAT_UNDEFINED, INTEROP_IFD_DIRECTORY, 0, "Interop Version",""},
 
 };
+
+/**
+ * Check to see if tag is in directory by checking tagInfoData
+ * @param tag   Input tag id to find
+ * @param dir   Input directory id
+ * @return True if tag is in given directory, otherwise return false
+ */
+bool exif::EXIFInfo::isInDirectory(uint16_t tag, uint8_t dir) {
+  int len = sizeof(tagInfoData)/sizeof(exif::TagInfo);
+
+  for (int i=0; i< len; i++) {
+      if (tag == tagInfoData[i].tag && dir == tagInfoData[i].directory)
+          return true;
+  }
+  return false;
+}
 
 /**
  * Get the TagInfo given a tag and directory
@@ -404,17 +445,42 @@ bool tagComparator(exif::IFEntry i, exif::IFEntry j) {
 }
 
 /**
+ * Get the name of the directory as a string
+ * @param dir Input directory ID from exif.h
+ * @return String describing the directory
+ */
+std::string getDirName(uint8_t dir) {
+    switch (dir) {
+        case IFD0_DIRECTORY: return "IFD0";
+        case EXIF_IFD_DIRECTORY: return "EXIF";
+        case GPS_IFD_DIRECTORY: return "GPS";
+        case INTEROP_IFD_DIRECTORY: return "INTEROP";
+        case IFD1_DIRECTORY: return "IFD1";
+        case EXIF_10_DIRECTORY: return "10";
+        default:
+            char tmp[5];
+            std::string str;
+            sprintf(tmp, "%d", dir);
+            str.append(tmp);
+            return str;
+    }
+}
+
+/**
  * Output list of IFEntries as a string
  * @param entries   Input entries to output
  * @return String outputing all IFEntries
  */
-std::string entries_toString(std::vector<exif::IFEntry> *entries) {
+std::string entries_toString(exif::IFDirectory *directory) {
     std::string str;
-
+    std::vector<exif::IFEntry> *entries = directory->entries;
+    std::string dirName = getDirName(directory->type);
     std::sort(entries->begin(),entries->end(),tagComparator); // Sort in case of new entries
     for (unsigned long i = 0; i < entries->size(); i++) {
         exif::IFEntry entry = entries->at(i);
         exif::TagInfo *tagInfo = exif::getTagInfo(entry.tag(),entry.directory());
+        str.append(dirName);
+        str.append(": ");
         str.append(tagInfo->name);
         str.append(": ");
         str.append(getValStr(entry));
@@ -432,7 +498,7 @@ std::string exif::EXIFInfo::toString() {
     string str;
 
     for (unsigned long i=0; i<IFDirectories.size(); i++) {
-        str.append(entries_toString(IFDirectories.at(i)->entries));
+        str.append(entries_toString(IFDirectories.at(i)));
     }
 
     return str;
@@ -445,7 +511,7 @@ std::string exif::EXIFInfo::toString() {
  */
 std::string exif::EXIFInfo::toString(int directory) {
 
-    return entries_toString(getDirectory(directory)->entries);
+    return entries_toString(getDirectory(directory));
 }
 
 /**
@@ -552,20 +618,21 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
         return false;
     }
     offs += 2;
-    unsigned long exif_sub_ifd_offset = 0;
+    unsigned long exif_ifd_offset = 0;
     unsigned long ifd_offset_interop = 0;
     unsigned long ifd_offset_gps = 0;
     unsigned long ifd_offset_10 = 0;
+    unsigned long ifd1_offset = 0;
 
-    std::vector<exif::IFEntry> *Main_IFentries = new std::vector<exif::IFEntry>;
+    std::vector<exif::IFEntry> *IFD0_IFentries = new std::vector<exif::IFEntry>;
 
     while (--num_entries >= 0) {
-        IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_MAIN_DIRECTORY);
+        IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, IFD0_DIRECTORY);
         LOGD("Entry %x %d %d", result.tag(), result.format(), result.length());
         offs += 12;
         switch (result.tag()) {
-            case EXIF_TAG_SUB_IFD_OFFSET:
-                exif_sub_ifd_offset = tiff_header_start + result.data();
+            case EXIF_TAG_EXIF_IFD_OFFSET:
+                exif_ifd_offset = tiff_header_start + result.data();
                 break;
             case EXIF_TAG_GPS_IFD_OFFSET:
                 ifd_offset_gps = tiff_header_start + result.data();
@@ -574,45 +641,87 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
                 ifd_offset_10 = tiff_header_start + result.data();
                 break;
             default:
-                Main_IFentries->push_back(result);
+                IFD0_IFentries->push_back(result);
                 break;
         }
     }
-    addDirectory(EXIF_MAIN_DIRECTORY,Main_IFentries);
+    addDirectory(IFD0_DIRECTORY,IFD0_IFentries);
 
-    LOGD("Main IFentries after read %d", (int) Main_IFentries->size());
+    LOGD("IFD0 %d IFentries added to directory", (int) IFD0_IFentries->size());
 
-    // Jump to the EXIF SubIFD if it exists and parse all the information
-    // there. Note that it's possible that the EXIF SubIFD doesn't exist.
-    // The EXIF SubIFD contains most of the interesting information that a
+    ifd1_offset = (unsigned long)parse<int32_t>(&buf[offs],isLittleEndian);
+    if (ifd1_offset != 0) ifd1_offset += tiff_header_start;
+    LOGD("ifd1_offset %x",(unsigned int)ifd1_offset);
+    offs += 4 ; //Account for link to next IFD
+
+    LOGD("EXIF IFD offset %x ",(unsigned int)exif_ifd_offset);
+    // Jump to the EXIF IFD if it exists and parse all the information
+    // there. Note that it's possible that the EXIF IFD doesn't exist.
+    // The EXIF IFD contains most of the interesting information that a
     // typical user might want.
-    if (exif_sub_ifd_offset != 0 && exif_sub_ifd_offset + 4 <= marker->length) {
-        std::vector<exif::IFEntry> *Sub_IFentries = new std::vector<exif::IFEntry>;
+    if (exif_ifd_offset != 0 && exif_ifd_offset + 4 <= marker->length) {
+        std::vector<exif::IFEntry> *EXIF_IFentries = new std::vector<exif::IFEntry>;
 
-        offs = exif_sub_ifd_offset;
+        offs = exif_ifd_offset;
         num_entries = parse_value<uint16_t>(buf + offs, isLittleEndian);
-        LOGD("SubIFD entries %d", num_entries);
+        LOGD("EXIF IFD entries %d", num_entries);
         if (offs + 6 + 12 * num_entries > marker->length) {
             ERROR("Marker not long enough");
             return false;
         }
         offs += 2;
+
+        // These entries might be IFD1 and not SubIFD - check first entry to decide
+        if (num_entries > 0) {
+          IFEntry firstEntry = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_IFD_DIRECTORY);
+          if (!isInDirectory(firstEntry.tag(),EXIF_IFD_DIRECTORY)) {
+            if (isInDirectory(firstEntry.tag(),IFD0_DIRECTORY)){
+              LOGD("EXIF IFD was actually IFD1");
+              ifd1_offset = exif_ifd_offset;
+              num_entries = 0;
+            }
+          }
+        }
         while (--num_entries >= 0) {
-            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_SUB_DIRECTORY);
+            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_IFD_DIRECTORY);
             offs += 12;
             switch (result.tag()) {
                 case EXIF_TAG_INTEROP_OFFSET:
                     ifd_offset_interop = tiff_header_start + result.data();
                     break;
                 default:
-                    Sub_IFentries->push_back(result);
+                    EXIF_IFentries->push_back(result);
                     break;
             }
         }
-        addDirectory(EXIF_SUB_DIRECTORY,Sub_IFentries);
-        LOGD("Sub IFentries after read %d", (int) Sub_IFentries->size());
+        if ( EXIF_IFentries->size() > 0) {
+          addDirectory(EXIF_IFD_DIRECTORY,EXIF_IFentries);
+          LOGD("EXIF %d IFentries added to directory", (int) EXIF_IFentries->size());
+        }
+        // Note that no next IFD link
     }
 
+    if (ifd1_offset != 0 && ifd1_offset + 4 <= marker->length) {
+        std::vector<exif::IFEntry> *IFD1_IFentries = new std::vector<exif::IFEntry>;
+
+        offs = ifd1_offset;
+        num_entries = parse_value<uint16_t>(buf + offs, isLittleEndian);
+        LOGD("IFD1 entries %d", num_entries);
+        if (offs + 6 + 12 * num_entries > marker->length) {
+            ERROR("Marker not long enough");
+            return false;
+        }
+        offs += 2;
+        while (--num_entries >= 0) {
+            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, IFD0_DIRECTORY);
+            offs += 12;
+            IFD1_IFentries->push_back(result);
+        }
+
+        addDirectory(IFD1_DIRECTORY,IFD1_IFentries);
+        LOGD("IFD1 %d IFentries added to directory", (int) IFD1_IFentries->size());
+        // Note that no next IFD link
+    }
 
     // Jump to the GPS SubIFD if it exists and parse all the information
     // there. Note that it's possible that the GPS SubIFD doesn't exist.
@@ -628,12 +737,13 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
         }
         offs += 2;
         while (--num_entries >= 0) {
-            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_GPS_DIRECTORY);
+            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, GPS_IFD_DIRECTORY);
             GPS_IFentries->push_back(result);
             offs += 12;
         }
-        addDirectory(EXIF_GPS_DIRECTORY,GPS_IFentries);
-        LOGD("GPS Entries after read %d",(int)GPS_IFentries->size());
+        addDirectory(GPS_IFD_DIRECTORY,GPS_IFentries);
+        LOGD("GPS %d Entries added to directory",(int)GPS_IFentries->size());
+        // Note that no next IFD link
     }
 
     // Jump to the 10 SubIFD if it exists and parse all the information
@@ -643,7 +753,6 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
 
         offs = ifd_offset_10;
         num_entries = parse_value<uint16_t>(buf + offs, isLittleEndian);
-        LOGD("Num 10 entries %d", num_entries);
         if (offs + 6 + 12 * num_entries > marker->length) {
             ERROR("Marker not long enough");
             return false;
@@ -655,6 +764,8 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
             offs += 12;
         }
         addDirectory(EXIF_10_DIRECTORY,IFentries);
+        LOGD("%d entries added to 10 direcotry", (int)IFentries->size());
+        // Note that no next IFD link
     }
 
     // Jump to the Interop IFD if it exists and parse all the information
@@ -664,18 +775,19 @@ bool exif::EXIFInfo::decodeEXIFsegment(AppMarker *marker) {
 
         offs = ifd_offset_interop;
         num_entries = parse_value<uint16_t>(buf + offs, isLittleEndian);
-        LOGD("Num Interop entries %d", num_entries);
         if (offs + 6 + 12 * num_entries > marker->length) {
             ERROR("Marker not long enough");
             return false;
         }
         offs += 2;
         while (--num_entries >= 0) {
-            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, EXIF_INTEROP_DIRECTORY);
+            IFEntry result = parseIFEntry(buf, offs, isLittleEndian, tiff_header_start, marker->length, INTEROP_IFD_DIRECTORY);
             IFentries->push_back(result);
             offs += 12;
         }
-        addDirectory(EXIF_INTEROP_DIRECTORY,IFentries);
+        addDirectory(INTEROP_IFD_DIRECTORY,IFentries);
+        LOGD("Num Interop entries added to directory %d", (int)IFentries->size());
+        // Note that no next IFD link
     }
 
 
@@ -818,8 +930,6 @@ void write_entry(unsigned char *buf, u_int32_t entry_offset, exif::IFEntry entry
  * @return  Ending offset of group of entries including the entry data
  */
 unsigned long write_ifd_entries(std::vector<exif::IFEntry> *entries, unsigned char *buf, unsigned long offset, unsigned long *link_offset) {
-    LOGD("IFentries to write %d", (int) entries->size());
-
     offset += write_buffer_2(&buf[offset], (uint16_t) entries->size());
     u_int32_t dataOffset = (u_int32_t) (offset + entries->size() * ENTRY_SIZE + 4); // End of fixed section.  4 bytes for next IFD
 
@@ -853,6 +963,8 @@ unsigned long write_app_marker(unsigned char* buff,exif::AppMarker *marker) {
 
 /**
  * Generate the EXIF header buffer starting from the "Exif" string. The data is written in big endian format.
+ * Note that we aren't putting the IFD's in the suggested order (IFD0, EXIF, GPS, INTEROP, IFD1) since it is
+ * easier to put them in order where we know the pointers (INTEROP, EXIF, GPS, 10, IFD0, IFD1)
  * @param buf           Buffer to place header (starts at EXIF_START (6))
  * @return The offset after the segment was written
  */
@@ -885,9 +997,8 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
         std::sort(IFDirectories.at(i)->entries->begin(), IFDirectories.at(i)->entries->end(), tagComparator);
     }
 
-    IFDirectory *MainIFD = getDirectory(EXIF_MAIN_DIRECTORY);
-    if (MainIFD == NULL) return (uint16_t)offset;
-    IFDirectory *SubIFD = getDirectory(EXIF_SUB_DIRECTORY);
+    IFDirectory *IFD0 = getDirectory(IFD0_DIRECTORY);
+    if (IFD0 == NULL) return (uint16_t)offset;
 
     unsigned long end_ifd = offset;
     unsigned long link_offset;
@@ -896,37 +1007,41 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
     std::vector<exif::IFEntry> *tmpEntries = new std::vector<exif::IFEntry>;
 
     // Put Interop IFD First
-    IFDirectory *InteropIFD = getDirectory(EXIF_INTEROP_DIRECTORY);
+    IFDirectory *InteropIFD = getDirectory(INTEROP_IFD_DIRECTORY);
     if (InteropIFD ->entries->size() > 0){
         unsigned long ifd_offset = end_ifd;
         end_ifd = write_ifd_entries(InteropIFD->entries, buf, ifd_offset, &link_offset);
 
+        LOGD("Wrote %d Interop entries",(int)InteropIFD->entries->size());
         // Add pointer to Interop IFD in Sub IFD directory
-        IFEntry *ifd_entry = new exif::IFEntry(EXIF_TAG_INTEROP_OFFSET, EXIF_SUB_DIRECTORY,  (int)ifd_offset - EXIF_START);
+        IFEntry *ifd_entry = new exif::IFEntry(EXIF_TAG_INTEROP_OFFSET, EXIF_IFD_DIRECTORY,  (int)ifd_offset - EXIF_START);
         updateEntry(ifd_entry);
         tmpEntries->push_back(*ifd_entry);
     }
 
-    // Put SubIFD next
-    if (SubIFD->entries->size() > 0) {
-        unsigned long sub_ifd_offset = end_ifd;
-        end_ifd = write_ifd_entries(SubIFD->entries, buf, sub_ifd_offset, &link_offset);
+    // Put EXIF IFD next
+    IFDirectory *ExifIFD = getDirectory(EXIF_IFD_DIRECTORY);
+    if (ExifIFD->entries->size() > 0) {
+        unsigned long exif_ifd_offset = end_ifd;
+        end_ifd = write_ifd_entries(ExifIFD->entries, buf, exif_ifd_offset, &link_offset);
 
-        // Add pointer to SubIFD in main IFD entry
-        IFEntry *sub_ifd_entry = new exif::IFEntry(EXIF_TAG_SUB_IFD_OFFSET, EXIF_MAIN_DIRECTORY, (int)sub_ifd_offset - EXIF_START);
-        updateEntry(sub_ifd_entry);
-        tmpEntries->push_back(*sub_ifd_entry);
+        LOGD("Wrote %d Exif entries",(int)ExifIFD->entries->size());
+        // Add pointer to EXIF IFD in main IFD0 entry
+        IFEntry *exif_ifd_entry = new exif::IFEntry(EXIF_TAG_EXIF_IFD_OFFSET, IFD0_DIRECTORY, (int)exif_ifd_offset - EXIF_START);
+        updateEntry(exif_ifd_entry);
+        tmpEntries->push_back(*exif_ifd_entry);
     }
 
     // Put GPS IFD next
-    IFDirectory *GPSIFD = getDirectory(EXIF_GPS_DIRECTORY);
+    IFDirectory *GPSIFD = getDirectory(GPS_IFD_DIRECTORY);
     if (GPSIFD ->entries->size() > 0){
         LOGD("Encoding %d GPS entries",(int)GPSIFD->entries->size());
         unsigned long gps_ifd_offset = end_ifd;
         end_ifd = write_ifd_entries(GPSIFD->entries, buf, gps_ifd_offset, &link_offset);
 
+        LOGD("Wrote %d GPS entries",(int)GPSIFD->entries->size());
         // Add pointer to GPSIFD in main IFD entry
-        IFEntry *gps_ifd_entry = new exif::IFEntry(EXIF_TAG_GPS_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)gps_ifd_offset - EXIF_START);
+        IFEntry *gps_ifd_entry = new exif::IFEntry(EXIF_TAG_GPS_IFD_OFFSET, IFD0_DIRECTORY,  (int)gps_ifd_offset - EXIF_START);
         updateEntry(gps_ifd_entry);
         tmpEntries->push_back(*gps_ifd_entry);
     }
@@ -942,23 +1057,37 @@ uint16_t exif::EXIFInfo::encodeEXIFsegment(unsigned char *buf) {
 
         end_ifd = write_ifd_entries(IFD->entries, buf, end_ifd, &link_offset);
 
+        LOGD("Wrote %d 10 entries",(int)IFD->entries->size());
+
         // Add pointer to 10 IFD in main IFD entry
-        ifd_entry = new exif::IFEntry(EXIF_TAG_10_IFD_OFFSET, EXIF_MAIN_DIRECTORY,  (int)ten_ifd_offset - EXIF_START);
+        ifd_entry = new exif::IFEntry(EXIF_TAG_10_IFD_OFFSET, IFD0_DIRECTORY,  (int)ten_ifd_offset - EXIF_START);
         updateEntry(ifd_entry);
         tmpEntries->push_back(*ifd_entry);
     }
 
+    // Put IFD0 (Thumbnail) next
+    IFDirectory *IFD1 = getDirectory(IFD1_DIRECTORY);
+    unsigned long ifd1_offset = end_ifd;
+    if (IFD1 ->entries->size() > 0){
+        end_ifd = write_ifd_entries(IFD1->entries, buf, ifd1_offset, &link_offset);
+        LOGD("Wrote %d IFD1 entries starting at %x ",(int)IFD1->entries->size(),(unsigned int)ifd1_offset);
+    }
+
     // Place first ifd after the final ifd data
     write_buffer_4(&buf[first_ifd_offset], (u_int32_t) end_ifd - EXIF_START);
-    unsigned long end_first_ifd = write_ifd_entries(MainIFD->entries, buf, end_ifd, &link_offset);
-
+    unsigned long end_ifd0 = write_ifd_entries(IFD0->entries, buf, end_ifd, &link_offset);
+    if (IFD1 ->entries->size() > 0) {
+        write_buffer_4(&buf[link_offset],
+                       (u_int32_t) ifd1_offset - EXIF_START); // Link IFD1 if we have that directory
+        LOGD("Added link to IFD1 at %x", (unsigned int) ifd1_offset - EXIF_START);
+    }
     // Now that we are done writing the encoded buffer, remove all of the temporary offset entries
     for (unsigned long i=0; i<tmpEntries->size(); i++) {
         removeEntry(tmpEntries->at(i).tag(),tmpEntries->at(i).directory());
     }
     tmpEntries->clear();
 
-    return (uint16_t) (end_first_ifd + 4);
+    return (uint16_t) (end_ifd0 + 4);
 }
 
 /**

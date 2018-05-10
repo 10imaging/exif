@@ -89,15 +89,17 @@
 #define ENTRY_FORMAT_SRATIONAL 10
 
 // Internally defined directory types
-#define EXIF_MAIN_DIRECTORY     1
-#define EXIF_SUB_DIRECTORY      2
-#define EXIF_GPS_DIRECTORY      3
-#define EXIF_INTEROP_DIRECTORY  4
+#define IFD0_DIRECTORY          1
+#define EXIF_IFD_DIRECTORY      2
+#define GPS_IFD_DIRECTORY       3
+#define INTEROP_IFD_DIRECTORY   4
+#define IFD1_DIRECTORY          5
 #define EXIF_10_DIRECTORY      10
 
-// Tags used in Main (IFD0) directory
-#define EXIF_TAG_IFD0_IMAGE_WIDTH   0x0100
-#define EXIF_TAG_IFD0_IMAGE_HEIGHT  0x0101
+// See http://www.cipa.jp/std/documents/e/DC-008-Translation-2016-E.pdf for definitions
+// Tags used in IFD0 (Primary Image) and IFD1 (Thumbnail) directory
+#define EXIF_TAG_IFD_IMAGE_WIDTH    0x0100
+#define EXIF_TAG_IFD_IMAGE_HEIGHT   0x0101
 #define EXIF_TAG_BITS_PER_SAMPLE    0x0102
 #define EXIF_TAG_COMPRESSION_SCHEME 0x0103
 #define EXIF_TAG_PIXEL_COMPOSITION  0x0106
@@ -128,11 +130,11 @@
 #define EXIF_TAG_RATING             0x4746
 #define EXIF_TAG_RATING_PERCENT     0x4749
 #define EXIF_TAG_COPYRIGHT          0x8298
-#define EXIF_TAG_SUB_IFD_OFFSET     0x8769
+#define EXIF_TAG_EXIF_IFD_OFFSET    0x8769
 #define EXIF_TAG_GPS_IFD_OFFSET     0x8825
 #define EXIF_TAG_10_IFD_OFFSET      0xAAAA
 
-// Tags used in SUB (EXIF) directory
+// Tags used in EXIF directory
 #define EXIF_TAG_EXPOSURE_TIME      0x829A
 #define EXIF_TAG_FNUMBER            0x829D
 #define EXIF_TAG_EXPOSURE_PROGRAM   0x8822
@@ -372,7 +374,7 @@ namespace exif {
          * Default constructor
          * @return new IFEntry
          */
-        IFEntry() : tag_(0xFF), directory_(EXIF_MAIN_DIRECTORY), format_(0xFF), data_(0), length_(0), val_byte_(nullptr) {}
+        IFEntry() : tag_(0xFF), directory_(IFD0_DIRECTORY), format_(0xFF), data_(0), length_(0), val_byte_(nullptr) {}
 
         /**
          * Constructor for IFEntry for a string type
@@ -1086,6 +1088,7 @@ namespace exif {
     private:
         IFDirectory* getDirectory(int type);
         IFDirectory* addDirectory(int type, std::vector<exif::IFEntry> *entries);
+        bool isInDirectory(uint16_t tag, uint8_t dir);
         uint16_t encodeEXIFsegment(unsigned char *buf);
         AppMarker* getAppMarker(const unsigned char *buf);
         bool decodeJPEGFile(const unsigned char *buf, unsigned long len);
