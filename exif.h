@@ -231,13 +231,11 @@
 #define EXIF_10_SCENE_PROBABILITY   0xAA01
 #define EXIF_10_SCENE_SUB_TYPES     0xAA02
 #define EXIF_10_SCENE_SUB_PROBS     0xAA03
-#define EXIF_10_SCENE_MODEL         0xAA04
+#define EXIF_10_NPE_MODEL           0xAA04
 #define EXIF_10_SCENE_RESULT        0xAA05
 #define EXIF_10_CORR_SCENE_TYPE     0xAA06
 #define EXIF_10_ENHANCEMENT_STRENGTH 0xAA07
-#define EXIF_10_WHITE_BALANCE       0xAA08
-#define EXIF_10_AF_MODE             0xAA09
-#define EXIF_10_FOCUS_DISTANCE      0xAA0A
+#define EXIF_10_TRAINING_MODE       0xAA08
 #define EXIF_10_PANO_NUM_IMAGES     0xAA0B
 #define EXIF_10_PANO_NUM_STITCHES   0xAA0C
 #define EXIF_10_ROI_CASCADE         0xAA0D
@@ -245,6 +243,7 @@
 #define EXIF_10_ROI_TYPES           0xAA0F
 #define EXIF_10_ROI_RESULTS         0xAA10
 #define EXIF_10_ROI_ENHANCEMENTS    0xAA11
+#define EXIF_10_ROI_NAMES           0xAA12
 #define EXIF_10_VERSION             0xAAAA
 
 // Tags used in Interop directory
@@ -979,14 +978,14 @@ namespace exif {
             case ENTRY_FORMAT_BYTE:
                 if (!extract_values<uint8_t>(result.val_byte(), buf, base, isLittleEndian,
                                              len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_BYTE for %x",result.tag());
                 }
                 break;
             case ENTRY_FORMAT_ASCII:
                 // string is basically sequence of uint8_t so just read it as bytes
                 if (!extract_values<uint8_t>(result.val_string(), buf, base,
                                              isLittleEndian, len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_ASCII for %x",result.tag());
                     result.val_string().resize(0);
                 } else {
                     // and cut zero byte at the end, since we don't want that in the
@@ -1000,31 +999,31 @@ namespace exif {
             case ENTRY_FORMAT_SHORT:
                 if (!extract_values<uint16_t>(result.val_short(), buf, base,
                                               isLittleEndian, len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_SHORT for %x",result.tag());
                 }
                 break;
             case ENTRY_FORMAT_LONG:
                 if (!extract_values<uint32_t>(result.val_long(), buf, base,
                                               isLittleEndian, len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_LONG for %x",result.tag());
                 }
                 break;
             case ENTRY_FORMAT_RATIONAL:
                 if (!extract_values<Rational>(result.val_rational(), buf, base,
                                               isLittleEndian, len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_RATIONAL for %x",result.tag());
                 }
                  break;
             case ENTRY_FORMAT_UNDEFINED:
                 if (!extract_values<uint8_t>(result.val_byte(), buf, base, isLittleEndian,
                                              len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_UNDEFINED for %x",result.tag());
                 }
                 break;
             case ENTRY_FORMAT_SRATIONAL:
                 if (!extract_values<SRational>(result.val_srational(), buf, base,
                                                isLittleEndian, len, result)) {
-                    ERROR("Error extracting value for %x",result.tag());
+                    ERROR("Error extracting ENTRY_FORMAT_SRATIONAL for %x",result.tag());
                 }
                 break;
             default:
